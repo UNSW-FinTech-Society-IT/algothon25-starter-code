@@ -6,6 +6,27 @@ Make the best trading algorithm!
 
 ---
 
+## Installation
+
+```
+# 1. Create virtual environment
+python3 -m venv venv
+
+# 2. Activate the virtual environment
+source venv/bin/activate   # For macOS/Linux
+# OR
+venv\Scripts\activate      # For Windows (use in CMD or PowerShell)
+
+# 3. Install dependencies
+pip install -r requirements.txt
+```
+
+Activate virtual environment
+```
+source venv/bin/activate
+```
+
+
 ## Objective
 
 Develop a trading strategy algorithm to perform optimally given certain metrics.
