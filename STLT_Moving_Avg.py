@@ -26,6 +26,10 @@ class Position_Generator:
             long_term_avg = self.get_trailing_avg(LONG_TERM_DURATION, price_history)
             self.long_term_avgs.append(long_term_avg)
 
+
+            # Price of share when sold - Price of share on the day it was traded
+            # If our position is negative
+
             # Short term avg just became less than long term avg, then go short
             if (
                 len(self.short_term_avgs) >= 2
@@ -33,6 +37,7 @@ class Position_Generator:
                 and short_term_avg <= long_term_avg
             ):
                 # Set current position to 10000 worth of shares
+                print("Shorted and set position to -10000 worth of shares")
                 self.current_position = -10000 // price_history[-1]
 
             # Short term avg just became more than long term avg, then go long
@@ -42,7 +47,8 @@ class Position_Generator:
                 and short_term_avg >= long_term_avg
             ):
                 # Add 10000 dollars worth of shares
-                self.current_position += 10000 // price_history[-1]
+                print("Added 10000 worth of shares")
+                self.current_position = 10000 // price_history[-1]
 
         return self.current_position
 
