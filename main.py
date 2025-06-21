@@ -44,7 +44,9 @@ def init_stlt_ma(st_dur, lt_dur):
 
 
 # Uncomment when doing it for real
-# init_stlt_ma(20, 50)
+# 10 and 50 is good - 2.03 sharpe, meanpl at 74
+# init_stlt_ma(10, 50)
+init_stlt_ma(27, 31)
 
 
 def stlt_ma(prcSoFar):

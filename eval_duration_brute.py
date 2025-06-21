@@ -72,8 +72,10 @@ max_s_info = {}
 max_meanpl = float("-inf")
 max_m_info = {}
 
-for st_dur in range(1, MAX_DUR):
-    for lt_dur in range(st_dur + 1, MAX_DUR):
+# Best st 27, lt 31
+
+for st_dur in range(1, MAX_DUR, 5):
+    for lt_dur in range(st_dur + 1, MAX_DUR, 5):
         print(f"st_dur: {st_dur}, lt_dur: {lt_dur}")
         init_stlt_ma(st_dur, lt_dur)
         (meanpl, ret, plstd, sharpe, dvol) = calcPL(prcAll,200)
