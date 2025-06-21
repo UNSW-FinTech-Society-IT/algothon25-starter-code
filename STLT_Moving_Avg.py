@@ -46,7 +46,7 @@ class Position_Generator:
                 and short_term_avg <= long_term_avg
             ):
                 # Set current position to 10000 worth of shares
-                print("Shorted and set position to -10000 worth of shares")
+                # print("Shorted and set position to -10000 worth of shares")
                 self.money_weighted_pos = -10000
 
             # Short term avg just became more than long term avg, then go long
@@ -56,7 +56,7 @@ class Position_Generator:
                 and short_term_avg >= long_term_avg
             ):
                 # Add 10000 dollars worth of shares
-                print("Long and set position to 10000 worth of shares")
+                # print("Long and set position to 10000 worth of shares")
                 self.money_weighted_pos = 10000
 
         return self.money_weighted_pos // price_history[-1]

@@ -3,6 +3,7 @@
 import numpy as np
 import pandas as pd
 from main import getMyPosition as getPosition
+from main import init_stlt_ma
 
 nInst = 0
 nt = 0
@@ -54,7 +55,7 @@ def calcPL(prcHist, numTestDays):
         if (totDVolume > 0):
             ret = value / totDVolume
         if (t > startDay):
-            print ("Day %d value: %.2lf todayPL: $%.2lf $-traded: %.0lf return: %.5lf" % (t,value, todayPL, totDVolume, ret))
+            # print("Day %d value: %.2lf todayPL: $%.2lf $-traded: %.0lf return: %.5lf" % (t,value, todayPL, totDVolume, ret))
             todayPLL.append(todayPL)
     pll = np.array(todayPLL)
     (plmu,plstd) = (np.mean(pll), np.std(pll))
@@ -63,14 +64,46 @@ def calcPL(prcHist, numTestDays):
         annSharpe = np.sqrt(249) * plmu / plstd
     return (plmu, ret, plstd, annSharpe, totDVolume)
 
+MAX_DUR = 100
+sharpes = []
+meanpls = []
+max_sharpe = float("-inf")
+max_s_info = {}
+max_meanpl = float("-inf")
+max_m_info = {}
+
+for st_dur in range(1, MAX_DUR):
+    for lt_dur in range(st_dur + 1, MAX_DUR):
+        print(f"st_dur: {st_dur}, lt_dur: {lt_dur}")
+        init_stlt_ma(st_dur, lt_dur)
+        (meanpl, ret, plstd, sharpe, dvol) = calcPL(prcAll,200)
+        score = meanpl - 0.1*plstd
+        print("=====")
+        print("mean(PL): %.1lf" % meanpl)
+        # print("return: %.5lf" % ret)
+        # print("StdDev(PL): %.2lf" % plstd)
+        print("annSharpe(PL): %.2lf " % sharpe)
+        # print("totDvolume: %.0lf " % dvol)
+        # print("Score: %.2lf" % score)
+        print()
+
+        info = {"st_dur": st_dur, "lt_dur": lt_dur}
+        sharpes.append((sharpe, info))
+        meanpls.append((meanpl, info))
+
+        if max_sharpe < sharpe:
+            max_s_info = info.copy()
+            max_sharpe = sharpe
+
+        if max_meanpl < meanpl:
+            max_m_info = info.copy()
+            max_meanpl = meanpl
+
+        print(f"Current max sharpe: {max_sharpe} at {max_s_info}")
+        print(f"Current max meanpl: {max_meanpl} at {max_m_info}")
 
 
-(meanpl, ret, plstd, sharpe, dvol) = calcPL(prcAll,200)
-score = meanpl - 0.1*plstd
-print ("=====")
-print ("mean(PL): %.1lf" % meanpl)
-print ("return: %.5lf" % ret)
-print ("StdDev(PL): %.2lf" % plstd)
-print ("annSharpe(PL): %.2lf " % sharpe)
-print ("totDvolume: %.0lf " % dvol)
-print ("Score: %.2lf" % score)
+sharpes.sort()
+meanpls.sort()
+
+
