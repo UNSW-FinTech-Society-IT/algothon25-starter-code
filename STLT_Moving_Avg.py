@@ -15,7 +15,7 @@ stock_prices = data[:, 0]
 # 3 > poggers
 
 
-class Position_Generator:
+class STLT_Position_Generator:
     def __init__(self, short_term_duration, long_term_duration):
         self.money_weighted_pos = 0
         self.short_term_avgs = []
