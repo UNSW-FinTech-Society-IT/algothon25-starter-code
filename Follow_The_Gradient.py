@@ -6,7 +6,9 @@ data = np.loadtxt("prices.txt")
 
 stock_prices = data[:, 0]
 NUM_ROWS = len(data[:, 1])
-
+RECENT_DAYS = 9
+MOVING_AVG_DAYS = 10
+MIN_DAYS = 11
 
 class FTG_Position_Generator:
     def __init__(self):
@@ -15,26 +17,29 @@ class FTG_Position_Generator:
         self.long_term_avgs = []
 
     # position is the number of stocks you are buying/selling.
-    def compute_position(self, day, stock_prices):
-        # error handling, day has to be within range.
-        current_price = stock_prices[day]
-        if day <= NUM_ROWS - 10:
-            # stocks from the recent 10 days
-            recent_ten_days = stock_prices[day : day + 10]
-            # the 100 moving average
-            ten_day_moving_average = [
-                np.mean(stock_prices[i : i + 101])
-                for i in range(day, day + 10)
-            ]
-            times = [i for i in range(day, day + 10)]
-            # [day, day +1 , ..., day + 10]
+   # In Follow_The_Gradient.py
 
-            print(times)
-            print(recent_ten_days)
-            print(day)
+
+    def compute_position(self, day, stock_prices):
+        current_price = stock_prices[day]
+
+        # --- FIX ---
+        # The logic must be based on PAST data.
+        # We need at least 101 days of history for the moving average calculation.
+        if day > MIN_DAYS: 
+            # Use data from the 10 days PRIOR to the current 'day'
+            recent_ten_days = stock_prices[day - RECENT_DAYS : day]
+            times = np.arange(RECENT_DAYS) # A simple range of 10 points
+
+            # The 100-day moving average must also be calculated from past data
+            hundred_day_moving_average = [
+                np.mean(stock_prices[i - MOVING_AVG_DAYS : i]) for i in range(day - RECENT_DAYS, day)
+            ]
+            
+            # Now len(recent_ten_days) and len(times) will both be 10, fixing the error.
             ten_day_gradient = np.gradient(recent_ten_days, times)
             moving_average_gradient = np.gradient(
-                ten_day_moving_average, times
+                hundred_day_moving_average, times
             )
 
             # compare the gradients
@@ -42,22 +47,16 @@ class FTG_Position_Generator:
 
             GRADIENT_DIFF = 0.1
             if difference < GRADIENT_DIFF:
-                # print("Long and set position to 10000 worth of shares")
                 self.money_weighted_pos = 10000
             elif difference > GRADIENT_DIFF:
-                # print("Shorted and set position to -10000 worth of shares")
                 self.money_weighted_pos = -10000
-            # else:
-            #     print("do nothing")
 
-        # return # of stocks
-        # print()
         return self.money_weighted_pos / current_price
 
 
 if __name__ == "__main__":
-    gen = Position_Generator()
-    for day, stock_price in enumerate(stock_prices):
+    gen = FTG_Position_Generator()
+    for day, stock_price in enumerate(stock_prices[250:], start=250):
         if day <= NUM_ROWS - 11:
             position = gen.compute_position(day, stock_prices)
             print(f"Day: {day + 1}, position: {position}")
