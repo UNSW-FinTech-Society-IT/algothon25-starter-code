@@ -63,7 +63,8 @@ class STLT_Position_Generator:
 
     # Gets the average of the last nth days of price_history and returns it
     # (n is duration)
-    def get_trailing_avg(self, duration, price_history):
+    @staticmethod
+    def get_trailing_avg(duration, price_history):
         return sum(price_history[-duration:]) / duration
 
 
