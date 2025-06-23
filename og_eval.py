@@ -30,6 +30,8 @@ def calcPL(prcHist, numTestDays):
     todayPLL = []
     (_,nt) = prcHist.shape
     startDay = nt + 1 - numTestDays
+    print("AMOGUS")
+    print(startDay)
     for t in range(startDay, nt+1):
         prcHistSoFar = prcHist[:,:t]
         curPrices = prcHistSoFar[:,-1]

@@ -7,27 +7,32 @@ data = np.loadtxt("prices.txt")
 
 stock_prices = data[:, 0]
 
-# Constants
-SHORT_TERM_DURATION = 10
-LONG_TERM_DURATION = 20
+# Sharpe ratio is (expected return - risk free rate) / (total risk taken)
+# Basically profit / risk - less risk better
+# 0 - 1 bad
+# 1 - 2 almost acceptable
+# 2 - 3 good
+# 3 > poggers
 
 
-class Position_Generator:
-    def __init__(self):
+class STLT_Position_Generator:
+    def __init__(self, short_term_duration, long_term_duration):
         self.money_weighted_pos = 0
         self.short_term_avgs = []
         self.long_term_avgs = []
+        self.short_term_duration = short_term_duration
+        self.long_term_duration = long_term_duration
 
     def compute_position(self, day, price_history):
-        if day >= LONG_TERM_DURATION:
+        if day >= self.long_term_duration:
             # Compute short term average
             short_term_avg = self.get_trailing_avg(
-                SHORT_TERM_DURATION, price_history
+                self.short_term_duration, price_history
             )
             self.short_term_avgs.append(short_term_avg)
             # Compute long term average
             long_term_avg = self.get_trailing_avg(
-                LONG_TERM_DURATION, price_history
+                self.long_term_duration, price_history
             )
             self.long_term_avgs.append(long_term_avg)
 
@@ -41,7 +46,7 @@ class Position_Generator:
                 and short_term_avg <= long_term_avg
             ):
                 # Set current position to 10000 worth of shares
-                print("Shorted and set position to -10000 worth of shares")
+                # print("Shorted and set position to -10000 worth of shares")
                 self.money_weighted_pos = -10000
 
             # Short term avg just became more than long term avg, then go long
@@ -51,7 +56,7 @@ class Position_Generator:
                 and short_term_avg >= long_term_avg
             ):
                 # Add 10000 dollars worth of shares
-                print("Long and set position to 10000 worth of shares")
+                # print("Long and set position to 10000 worth of shares")
                 self.money_weighted_pos = 10000
 
         return self.money_weighted_pos // price_history[-1]
