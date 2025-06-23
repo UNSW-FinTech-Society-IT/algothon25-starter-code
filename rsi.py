@@ -3,6 +3,7 @@
 import numpy as np
 
 RSI_PERIOD = 14
+LOWER_
 
 
 class RSIPositionGenerator:
@@ -47,6 +48,7 @@ class RSIPositionGenerator:
         return rsi
 
     def calculate_rsi(self, day):
+        """Calculate the RSI on day"""
         stock_prices = self.get_stock_prices()
         prev_day_data = self.get_data(day - 1)
 
@@ -70,8 +72,16 @@ class RSIPositionGenerator:
 
         return rsi
 
+    def calculate_position(self, day):
+        rsi = self.calculate_initial_rsi(day)
+
+
+
+
+
 
 def main():
+    """Main function"""
     data = np.loadtxt("prices.txt")
 
     stock_prices = data[:, 0]
