@@ -1,76 +1,71 @@
 from typing import List, Optional
 import numpy as np
-import matplotlib.pyplot as plt
 
-from sigMA.STLT_Moving_Avg import Position_Generator
+# from sigMA.STLT_Moving_Avg import Position_Generator
 
 data = np.loadtxt("prices.txt")
 
-stock_prices = data[:, 0]
-plt()
+# plt()
 # Constants
 SHORT_TERM_MA_WINDOW = 20
+# sigma is standard deviation (finance term)
+NUM_SIGMA = 2
 
 #Standard Deviation Formula
-np.std(stock_prices[:14])
+# sigma = np.std(stock_prices[:14])
 
 class STD_Revert_Generator:
+    def __init__(self, stock_prices):
+        self.money_weighted_pos = 0
+        self.stock_prices = stock_prices
+    def calculate_sigma_sma(self, day):
+        """Calculates sigma over a 14 day period"""
 
-    def __init__(self, price_history):
-        self.execute_trade = 0
-        self.price_history = price_history
-        
-        
-    def short_term_ma(self) -> Any:
-        return 
+        array = self.stock_prices[day - SHORT_TERM_MA_WINDOW: day]
+
+        sigma = np.std(array)
+        sma = np.mean(array)
+
+        return sigma, sma
+
+
     def compute_position(self, day):
-        price_history = self.price_history
-        if SIGMA >= 2.00:
-        sell
+        """Compute position"""
+        current_price = self.stock_prices[day] # price on day X
+        sigma, sma = self.calculate_sigma_sma(day)
+        upper_band, lower_band = self.get_upper_lower_band(sma, sigma)
 
-    def bollinger_band_strategy(self) -> Any:
-        # calculate a short term moving average
-        short_term_moving_average = self.short_term_moving_average()
-        # Execute trade whenever the current stock price hits upper/lower band
-        if short_term_moving_average > self.upper_band():
-            # Sell if price hits upper band
-            self.execute_trade = -10000 # sell 10000 worth of shares
-        if short_term_moving_average < self.lower_band():
-            self.execute_trade = 10000 # buy 10000 worth of shares
+        if current_price > upper_band:
+            self.money_weighted_pos = -10000
+            print(f"Day {day}: Price {current_price:.2f} > Upper Band {upper_band:.2f}. Sell")
+        elif current_price < lower_band:
+            self.money_weighted_pos = 10000
+            print(f"Day {day}: Price {current_price:.2f} < Lower Band {lower_band:.2f}. Buy")
+
+
+        if current_price > 0: # Avoid division by zero
+            return int(self.money_weighted_pos // current_price)
+
+        return int(self.money_weighted_pos // self.stock_prices[day])
         
-    def short_term_moving_average() -> float:
-        short_term_avg = Position_Generator.get_trailing_avg(
-                SHORT_TERM_MA_WINDOW, price_history
-
-    # Create a upper band and lower band value based off of standard deviations from the short term moving average price
-    def upper_band() -> float:
-        pass
-
-    def lower_band() -> float:
-        pass
-
-    def execute_trade() -> None:
-    
-        # Buy if price hits lower band
-        pass
 
 
 
+    # # Create a upper band and lower band value based off of standard deviations from the short term moving average price
+    def get_upper_lower_band(self, midde_band, sigma):
+        upper_band = midde_band + (sigma * NUM_SIGMA)
+        lower_band = midde_band - (sigma * NUM_SIGMA)
+
+        return upper_band, lower_band
 
 
 
-class A:
-    a: int
-    b: int
-    c: int
-    
-    def __init__(self, a: int, b: Optional[int] = None):
-        self.a = a
-        if not b:
-            b = 100
-        self.b = b
-        self.c = 25
+def main():
+    stock_prices = data[:, 0]
+    blob = STD_Revert_Generator(stock_prices=stock_prices)
+    for day in range(SHORT_TERM_MA_WINDOW, len(stock_prices)):
+        blob.compute_position(day)
 
-    def some_func(self) -> int:
-        self.a += 1
-        return self.a + self.b - self.c
+
+if __name__ == "__main__":
+    main()
