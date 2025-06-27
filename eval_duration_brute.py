@@ -3,7 +3,7 @@
 import numpy as np
 import pandas as pd
 from main import getMyPosition as getPosition
-from main import init_stlt_ma
+from main import *
 
 nInst = 0
 nt = 0
@@ -64,7 +64,7 @@ def calcPL(prcHist, numTestDays):
         annSharpe = np.sqrt(249) * plmu / plstd
     return (plmu, ret, plstd, annSharpe, totDVolume)
 
-MAX_DUR = 100
+MAX_DUR = 55
 sharpes = []
 meanpls = []
 max_sharpe = float("-inf")
@@ -74,10 +74,10 @@ max_m_info = {}
 
 # Best st 27, lt 31
 
-for st_dur in range(1, MAX_DUR, 5):
-    for lt_dur in range(st_dur + 1, MAX_DUR, 5):
+for st_dur in range(1, MAX_DUR, 1):
+    for lt_dur in range(st_dur + 1, MAX_DUR, 1):
         print(f"st_dur: {st_dur}, lt_dur: {lt_dur}")
-        init_stlt_ma(st_dur, lt_dur)
+        init_stlt_exp_ma(st_dur, lt_dur)
         (meanpl, ret, plstd, sharpe, dvol) = calcPL(prcAll,200)
         score = meanpl - 0.1*plstd
         print("=====")

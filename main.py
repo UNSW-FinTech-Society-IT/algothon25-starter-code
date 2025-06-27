@@ -91,7 +91,9 @@ def init_stlt_exp_ma(st_dur, lt_dur):
     ]
 
 
-init_stlt_exp_ma(7, 14)
+# init_stlt_exp_ma(16, 32)
+
+# Best durations for exp: (16, 32)
 
 
 def stlt_exp_ma(prcSoFar):
