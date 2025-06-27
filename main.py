@@ -76,11 +76,13 @@ def init_stlt_exp_ma(st_dur, lt_dur):
 
 # Uncomment your strategy when you are using it
 
+# SIMPLE MOVING AVG
+
 # 10 and 50 is good - 2.03 sharpe, meanpl at 74
 # init_stlt_ma(10, 50)
 init_stlt_ma(27, 31)
 
-# init_ftg_ma()
+# EXPONENTIAL MOVING AVG
 
 # Best durations for exp: (16, 32)
 # sharpe is 1.7 w/ comm otherwise 2.17
@@ -88,3 +90,7 @@ init_stlt_ma(27, 31)
 # With (7, 14):
 # sharpe is 0.4 w/ comm otherwise 1.14
 # init_stlt_exp_ma(16, 32)
+
+# FOLLOW THE GRADIENT
+
+# init_ftg_ma()
