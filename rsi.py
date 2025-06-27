@@ -13,7 +13,7 @@ class Position(Enum):
     LONG = 3
 
 
-class RSIPositionGenerator:
+class RSI_Position_Generator:
     """Constructor"""
 
     def __init__(self, stock_prices):
@@ -56,7 +56,7 @@ class RSIPositionGenerator:
         """Get money positon"""
         return self.__money_weighted_pos
 
-    def set_money_pos(self, value):
+    def set_money_pos(self, value: int):
         """Set money position"""
         self.__money_weighted_pos = value
 
@@ -128,60 +128,50 @@ class RSIPositionGenerator:
     def calculate_position(self, day):
         """The main logic function to decide on trading actions for a given day."""
         rsi = self.calculate_rsi(day)
+        print(f"the rsi is: {rsi}")
         moving_average = self.get_moving_average(day)
         current_price = self.get_stock_prices()[day]
 
         position = self.get_current_position()
-
         if position == Position.FLAT:  # If we are flat, check for an entry signal
-            if rsi < 20:
+            if rsi < 30:
                 self.set_position(Position.LONG)
                 self.set_entry_price(current_price)
                 self.set_entry_ma(moving_average)
                 self.buy()
-                # print(
-                #     f"Day {day}: RSI < 20 ({rsi:.2f}). Entering LONG position at {current_price:.2f}"
-                # )
-            elif rsi > 80:
+                print("rsi < 30")
+            elif rsi > 70:
                 self.set_position(Position.SHORT)
                 self.set_entry_price(current_price)
                 self.set_entry_ma(moving_average)
                 self.sell()
-                # print(
-                #     f"Day {day}: RSI > 80 ({rsi:.2f}). Entering SHORT position at {current_price:.2f}"
-                # )
+                print("rsi > 70")
 
         # If we are not flat, check for an exit signal
         elif position == Position.LONG:
-            if rsi > 60:
-                # print(
-                #     f"Day {day}: RSI > 60 ({rsi:.2f}). Take Profit on LONG at {current_price:.2f}. Profit: {current_price - self.get_entry_price():.2f}"
-                # )
+            if rsi > 60: # exit the trade
+                print("rsi > 60")
                 self.set_position(Position.FLAT)
                 self.set_money_pos(0)
-            else:
+            else: # 
                 # point WHEN you entered trade.
                 entry_price = self.get_entry_price()
                 stop_loss_level = self.get_entry_price() - (self.get_entry_ma() / 2)
-                if entry_price < stop_loss_level:
-                    # print("stop loss")
+                if entry_price < stop_loss_level: # 
+                    print("stop loss")
                     self.set_position(Position.FLAT)
                     self.set_money_pos(0)
 
         elif position == Position.SHORT:
             if rsi < 40:
-                # print(
-                #     f"Day {day}: RSI < 40 ({rsi:.2f}). Take Profit on SHORT at {current_price:.2f}. Profit: {self.get_money_pos() - current_price:.2f}"
-                # )
+                print("rsi < 40")
                 self.set_position(Position.FLAT)
                 self.set_money_pos(0.0)
             else:
                 entry_price = self.get_entry_price()
                 stop_loss_level = entry_price + (self.get_entry_ma() / 2)
                 if entry_price > stop_loss_level:
-                    # print(
-                    #     f"Day {day}: Price {current_price:.2f} hit Stop Loss {stop_loss_level:.2f}. Closing SHORT. Loss: {self.get_money_pos() - current_price:.2f}"
-                    # )
+                    print("stop loss")
                     self.set_position(Position.FLAT)
                     self.set_money_pos(0.0)
         return self.get_money_pos() / current_price
