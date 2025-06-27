@@ -13,6 +13,7 @@ stock_prices = data[:, 0]
 
 # Sharpe ratio is (expected return - risk free rate) / (total risk taken)
 # Basically profit / risk - less risk better
+# Risk is the consistency we make money - for eg make 1000, 20, -1000 is very risky
 # 0 - 1 bad
 # 1 - 2 almost acceptable
 # 2 - 3 good

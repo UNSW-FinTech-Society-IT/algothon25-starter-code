@@ -7,7 +7,8 @@ from main import *
 
 nInst = 0
 nt = 0
-commRate = 0.0005
+# commRate = 0.0005
+commRate = 0
 dlrPosLimit = 10000
 
 def loadPrices(fn):
@@ -64,7 +65,8 @@ def calcPL(prcHist, numTestDays):
         annSharpe = np.sqrt(249) * plmu / plstd
     return (plmu, ret, plstd, annSharpe, totDVolume)
 
-MAX_DUR = 55
+# MAX_DUR = 55
+MAX_DUR = 100
 sharpes = []
 meanpls = []
 max_sharpe = float("-inf")
@@ -72,12 +74,12 @@ max_s_info = {}
 max_meanpl = float("-inf")
 max_m_info = {}
 
-# Best st 27, lt 31
+# Best st 27, lt 31 for stlt ma (simple)
 
 for st_dur in range(1, MAX_DUR, 1):
     for lt_dur in range(st_dur + 1, MAX_DUR, 1):
         print(f"st_dur: {st_dur}, lt_dur: {lt_dur}")
-        init_stlt_exp_ma(st_dur, lt_dur)
+        init_stlt_ma(st_dur, lt_dur)
         (meanpl, ret, plstd, sharpe, dvol) = calcPL(prcAll,200)
         score = meanpl - 0.1*plstd
         print("=====")
@@ -90,7 +92,8 @@ for st_dur in range(1, MAX_DUR, 1):
         print()
 
         info = {"st_dur": st_dur, "lt_dur": lt_dur}
-        sharpes.append((sharpe, info))
+        # sharpes.append((sharpe, info))
+        commRate = 0
         meanpls.append((meanpl, info))
 
         if max_sharpe < sharpe:
@@ -108,4 +111,7 @@ for st_dur in range(1, MAX_DUR, 1):
 sharpes.sort()
 meanpls.sort()
 
+with open("sharpe_temp.txt", "w") as f:
+    for sharpe_info in sharpes:
+        print(f"{sharpe_info[0]}|({sharpe_info[1]['st_dur']}, {sharpe_info[1]['lt_dur']})", file=f)
 
