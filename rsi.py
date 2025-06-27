@@ -16,13 +16,13 @@ class Position(Enum):
 class RSI_Position_Generator:
     """Constructor"""
 
-    def __init__(self, stock_prices):
+    def __init__(self):
         self.__data = {}  # TODO: RENAME THIS TO SMTH MORE CLEAR
-        self.__stock_prices = stock_prices
         self.__money_weighted_pos = 0
         self.__current_position = Position.FLAT
         self.__entry_price = 0
         self.__entry_ma = 0
+        self.__days_passed = 0
 
     def add_data(self, day, average_gain, average_loss):
         """Add data such as avg_gain and avg_loss"""
@@ -66,32 +66,32 @@ class RSI_Position_Generator:
     def sell(self):
         self.set_money_pos(-10000)
 
-    def calculate_initial_rsi(self):
+    def calculate_initial_rsi(self, day, stock_prices):
         """Calculate initial rsi"""
-        stock_prices = self.get_stock_prices()
         delta = np.diff(stock_prices[: RSI_PERIOD + 1])
 
         gains = sum(d for d in delta if d > 0)
         losses = sum(abs(d) for d in delta if d < 0)
 
-        average_gain = gains / RSI_PERIOD
+        average_gain = gains / RSI_PERIOD  # RSI_PERIOD = 14
         average_loss = losses / RSI_PERIOD
 
+        # print(self.__data)
         if average_loss == 0:
-            return 100.0
+            self.add_data(day, average_gain, average_loss)
+            return 100  # since rs -> inf, so rsi -> 100
 
         rs = average_gain / average_loss
         rsi = 100 - (100 / (1 + rs))
 
-        self.add_data(
-            RSI_PERIOD + 1, average_gain=average_gain, average_loss=average_loss
-        )
+        self.add_data(day, average_gain, average_loss)
 
+        # print("DATA", self.__data)
         return rsi
 
-    def calculate_rsi(self, day: int):
+    def calculate_rsi(self, day: int, stock_prices):
         """Calculate the RSI on day"""
-        stock_prices = self.get_stock_prices()
+        # print(f"day: {day}")
         prev_day_data = self.get_data(day - 1)
 
         prev_avg_gain, prev_avg_loss = (
@@ -114,10 +114,8 @@ class RSI_Position_Generator:
 
         return rsi
 
-    def get_moving_average(self, day: int):
-        stocks = self.get_stock_prices()
-
-        return np.mean(stocks[day - MOVING_AVERAGE_WINDOW + 1 : day + 1])
+    def get_moving_average(self, day: int, stock_prices):
+        return np.mean(stock_prices[day - MOVING_AVERAGE_WINDOW + 1 : day + 1])
 
     def get_current_position(self):
         return self.__current_position
@@ -125,12 +123,20 @@ class RSI_Position_Generator:
     def set_position(self, new_position: Position):
         self.__current_position = new_position
 
-    def compute_position(self, day):
+    def compute_position(self, day, stock_prices):
         """The main logic function to decide on trading actions for a given day."""
-        rsi = self.calculate_rsi(day)
-        print(f"the rsi is: {rsi}")
-        moving_average = self.get_moving_average(day)
-        current_price = self.get_stock_prices()[day]
+        if self.__days_passed < RSI_PERIOD + 1:
+            self.__days_passed += 1
+            return 0
+        elif self.__days_passed == RSI_PERIOD + 1:
+            rsi = self.calculate_initial_rsi(day, stock_prices)
+            self.__days_passed += 1
+        else:
+            rsi = self.calculate_rsi(day, stock_prices)
+        
+        # print(f"the rsi is: {rsi}")
+        moving_average = self.get_moving_average(day, stock_prices)
+        current_price = stock_prices[day]
 
         position = self.get_current_position()
         if position == Position.FLAT:  # If we are flat, check for an entry signal
@@ -183,12 +189,12 @@ def main():
     stock_prices = data[:, 0]
     pos = RSI_Position_Generator(stock_prices)
 
-    init_rsi = pos.calculate_initial_rsi()
-    print(init_rsi)
+    # init_rsi = pos.calculate_initial_rsi(stock_prices)
+    # print(init_rsi)
 
     # start on day 16
     for i in range(RSI_PERIOD + 2, len(stock_prices)):
-        rsi = pos.compute_position(i)
+        rsi = pos.compute_position(i, stock_prices)
         print(rsi)
 
 
