@@ -125,7 +125,7 @@ class RSI_Position_Generator:
     def set_position(self, new_position: Position):
         self.__current_position = new_position
 
-    def calculate_position(self, day):
+    def compute_position(self, day):
         """The main logic function to decide on trading actions for a given day."""
         rsi = self.calculate_rsi(day)
         print(f"the rsi is: {rsi}")
@@ -181,14 +181,14 @@ def main():
     data = np.loadtxt("prices.txt")
 
     stock_prices = data[:, 0]
-    pos = RSIPositionGenerator(stock_prices)
+    pos = RSI_Position_Generator(stock_prices)
 
     init_rsi = pos.calculate_initial_rsi()
     print(init_rsi)
 
     # start on day 16
     for i in range(RSI_PERIOD + 2, len(stock_prices)):
-        rsi = pos.calculate_position(i)
+        rsi = pos.compute_position(i)
         print(rsi)
 
 
