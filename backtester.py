@@ -384,10 +384,17 @@ def generate_sharpe_heat_map(results: BacktesterResults, subplot: Axes) -> Axes:
     returns: ndarray = results["daily_instrument_returns"]
     means: ndarray = np.mean(returns,
         axis=1)
+
     stds: ndarray = np.std(returns,
         axis=1)
 
-    sharpe_ratios: ndarray = (means / stds) * np.sqrt(250)
+    # I changed this line
+    # sharpe_ratios: ndarray = (means / stds) * np.sqrt(250)
+
+    # Make std = NaN where 0 to suppress it
+    stds_safe = np.where(stds == 0, np.nan, stds)
+    sharpe_ratios = (means / stds_safe) * np.sqrt(250)
+
 
     # Reshape grid into (1, 50) for the horizontal heatmap
     sharpe_grid = sharpe_ratios.reshape(1,
@@ -475,7 +482,7 @@ def get_subplot(graph_type: str, results: BacktesterResults, subplot: Axes) -> A
 
 
 def get_ema(instrument_price_history: ndarray, lookback: int) -> ndarray:
-    price_series: Series = pd.Series(instrument_price_history)
+    price_series = pd.Series(instrument_price_history)
     return price_series.ewm(span=lookback,
         adjust=False).mean()
 
