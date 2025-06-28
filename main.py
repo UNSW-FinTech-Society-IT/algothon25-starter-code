@@ -57,7 +57,6 @@ def init_stlt_ma(st_dur, lt_dur):
         for _ in range(nInst)
     ]
 
-
 def init_ftg_ma():
     # Create nInst number of generator objects
     global gen_ls
