@@ -61,7 +61,6 @@ def init_stlt_ma(st_dur, lt_dur):
         for _ in range(nInst)
     ]
 
-
 def init_ftg_ma():
     # Create nInst number of generator objects
     global gen_ls
@@ -95,7 +94,7 @@ def init_bollinger_and_rsi(time_period, num_sd):
         for _ in range(nInst)
     ]
 
-    
+
 # Uncomment your strategy when you are using it
 
 # SIMPLE MOVING AVG
@@ -124,4 +123,4 @@ def init_bollinger_and_rsi(time_period, num_sd):
 # init_bollinger_bands(time_period=20, num_sd=2)
 
 # BOLLINGER + RSI
-init_bollinger_and_rsi(time_period=20, num_sd=1.5)
+init_bollinger_and_rsi(time_period=20, num_sd=2)
