@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import numpy as np
 import pandas as pd
@@ -30,8 +30,7 @@ def calcPL(prcHist, numTestDays):
     todayPLL = []
     (_,nt) = prcHist.shape
     startDay = nt + 1 - numTestDays
-    print("AMOGUS")
-    print(startDay)
+    # print(startDay)
     for t in range(startDay, nt+1):
         prcHistSoFar = prcHist[:,:t]
         curPrices = prcHistSoFar[:,-1]
