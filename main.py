@@ -3,6 +3,8 @@ from STLT_Moving_Avg import STLT_Position_Generator
 from STLT_Exp_MA import STLT_Exp_Position_Generator
 from Follow_The_Gradient import FTG_Position_Generator
 from rsi import RSI_Position_Generator
+from bollinger import Bollinger_Position_Generator
+from bollinger_and_rsi import Bollinger_RSI_Position_Generator
 import sys
 
 
@@ -79,6 +81,20 @@ def init_rsi():
     global gen_ls
     gen_ls = [RSI_Position_Generator() for _ in range(nInst)]
 
+def init_bollinger_bands(time_period, num_sd):
+    global gen_ls
+    gen_ls = [
+        Bollinger_Position_Generator(time_period, num_sd)
+        for _ in range(nInst)
+    ]
+
+def init_bollinger_and_rsi(time_period, num_sd):
+    global gen_ls
+    gen_ls = [
+        Bollinger_RSI_Position_Generator(time_period, num_sd)
+        for _ in range(nInst)
+    ]
+
     
 # Uncomment your strategy when you are using it
 
@@ -101,5 +117,11 @@ def init_rsi():
 
 # init_ftg_ma()
 
-# Underbought Overbought Timing Strategies 
-init_rsi()
+# UNDERBOUGHT OVERBOUGHT TIMING STRATEGIES (RSI)
+# init_rsi()
+
+# BOLLINGER BANDS
+# init_bollinger_bands(time_period=20, num_sd=2)
+
+# BOLLINGER + RSI
+init_bollinger_and_rsi(time_period=20, num_sd=1.5)

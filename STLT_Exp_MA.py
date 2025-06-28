@@ -73,14 +73,14 @@ class STLT_Exp_Position_Generator:
         k = 2 / (duration + 1)
         today = price_history[-1]
         # Note we haven't appended today's
-        # ALso on first run, use sma as initial yesterday value
+        # Also on first run, use sma as initial yesterday value
         if len(ema_history) == 0:
             ema_yesterday = self.get_trailing_avg(duration, price_history)
         else:
             ema_yesterday = ema_history[-1]
         return today * k + ema_yesterday * (1 - k)
 
-    # Gets the average of the last nth days of price_history and returns it
+    # Gets the average of the last n days of price_history and returns it
     # (n is duration)
     def get_trailing_avg(self, duration, price_history):
         return sum(price_history[-duration:]) / duration
