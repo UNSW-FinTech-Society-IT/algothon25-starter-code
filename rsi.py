@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-
-import numpy as np
 from enum import Enum
+from typing import Dict
+import numpy as np
+
 
 RSI_PERIOD = 14
 MOVING_AVERAGE_WINDOW = 14
@@ -15,6 +16,14 @@ class Position(Enum):
 
 class RSI_Position_Generator:
     """Constructor"""
+    __data: Dict[int, Dict[str, float]]
+    __money_weighted_pos: float
+    __current_position: Position
+    __entry_price: float
+    __entry_ma: float
+    __days_passed: int
+
+
 
     def __init__(self):
         self.__data = {}  # TODO: RENAME THIS TO SMTH MORE CLEAR
@@ -24,49 +33,45 @@ class RSI_Position_Generator:
         self.__entry_ma = 0
         self.__days_passed = 0
 
-    def add_data(self, day, average_gain, average_loss):
+    def add_data(self, day: int, average_gain: float, average_loss: float) -> None:
         """Add data such as avg_gain and avg_loss"""
         self.__data[day] = {"avg_gain": average_gain, "avg_loss": average_loss}
 
-    def get_data(self, day: int):
+    def get_data(self, day: int) -> Dict[str, float]:
         """Retrieve data"""
         return self.__data[day]
 
-    def set_entry_price(self, price: int):
+    def set_entry_price(self, price: float) -> None:
         """Setter"""
         self.__entry_price = price
 
-    def get_entry_price(self):
+    def get_entry_price(self) -> float:
         """Getter"""
         return self.__entry_price
 
-    def set_entry_ma(self, ma):
+    def set_entry_ma(self, ma: float) -> None:
         """Set entry moving average"""
         self.__entry_ma = ma
 
-    def get_entry_ma(self):
+    def get_entry_ma(self) -> float:
         """Get entry moving average"""
         return self.__entry_ma
 
-    def get_stock_prices(self):
-        """Retrieve stock prices"""
-        return self.__stock_prices
-
-    def get_money_pos(self):
+    def get_money_pos(self) -> float:
         """Get money positon"""
         return self.__money_weighted_pos
 
-    def set_money_pos(self, value: int):
+    def set_money_pos(self, value: int) -> None:
         """Set money position"""
         self.__money_weighted_pos = value
 
-    def buy(self):
+    def buy(self) -> None:
         self.set_money_pos(10000)
 
-    def sell(self):
+    def sell(self) -> None:
         self.set_money_pos(-10000)
 
-    def calculate_initial_rsi(self, day, stock_prices):
+    def calculate_initial_rsi(self, day: int, stock_prices) -> float:
         """Calculate initial rsi"""
         delta = np.diff(stock_prices[: RSI_PERIOD + 1])
 
@@ -79,10 +84,10 @@ class RSI_Position_Generator:
         # print(self.__data)
         if average_loss == 0:
             self.add_data(day, average_gain, average_loss)
-            return 100  # since rs -> inf, so rsi -> 100
+            return 100.00  # since rs -> inf, so rsi -> 100
 
         rs = average_gain / average_loss
-        rsi = 100 - (100 / (1 + rs))
+        rsi = 100 - (100.0 / (1 + rs))
 
         self.add_data(day, average_gain, average_loss)
 
@@ -114,7 +119,7 @@ class RSI_Position_Generator:
 
         return rsi
 
-    def get_moving_average(self, day: int, stock_prices):
+    def get_moving_average(self, day: int, stock_prices) -> float:
         return np.mean(stock_prices[day - MOVING_AVERAGE_WINDOW + 1 : day + 1])
 
     def get_current_position(self):
@@ -132,7 +137,7 @@ class RSI_Position_Generator:
             rsi = self.calculate_initial_rsi(day, stock_prices)
             self.__days_passed += 1
         else:
-            rsi = self.calculate_rsi(day, stock_prices)
+            rsi = self.calculate_rsi(day, f)
         
         # print(f"the rsi is: {rsi}")
         moving_average = self.get_moving_average(day, stock_prices)

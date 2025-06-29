@@ -1,3 +1,4 @@
+from typing import List
 import numpy as np
 from STLT_Moving_Avg import STLT_Position_Generator
 from STLT_Exp_MA import STLT_Exp_Position_Generator
@@ -5,7 +6,8 @@ from Follow_The_Gradient import FTG_Position_Generator
 from rsi import RSI_Position_Generator
 from bollinger import Bollinger_Position_Generator
 from bollinger_and_rsi import Bollinger_RSI_Position_Generator
-import sys
+from numpy.typing import NDArray
+
 
 
 ##### TODO #########################################
@@ -20,19 +22,22 @@ currentPos = np.zeros(nInst)
 
 # prcSoFar is a 2d array of prices given for each stock so far
 # Each row in the array are prices for a certain stock, stocks organised by rows
-def getMyPosition(prcSoFar):
+def getMyPosition(prcSoFar: np.ndarray[np.ndarray[np.float64]]) -> NDArray:
+    print(type(prcSoFar[0][0]))
     return compute_all_positions(prcSoFar)
 
 
 # This will work for all our different strategies as long as you code your
 # own init function
-def compute_all_positions(prcSoFar):
+def compute_all_positions(prcSoFar: List[NDArray[np.float64]]):
 
     final_positions = []
+    day = 1
     for index, stock_prices in enumerate(prcSoFar):
         pos = gen_ls[index].compute_position(
-            len(stock_prices) - 1, stock_prices
+            day, stock_prices
         )
+        day += 1
         final_positions.append(pos)
     return np.array(final_positions)
 

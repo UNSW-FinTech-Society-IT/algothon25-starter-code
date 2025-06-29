@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
-from os import wait3
+
 
 import pandas as pd
-from pandas import DataFrame
-from typing import TypedDict, List, Dict, Any
+from pandas import DataFrame, Series
+from typing import TypedDict, List, Dict
 import numpy as np
 from numpy import ndarray
 import matplotlib.pyplot as plt
@@ -14,7 +14,7 @@ import os
 from importlib.machinery import ModuleSpec
 from types import ModuleType, FunctionType
 from matplotlib.axes import Axes
-import json
+
 
 # CONSTANTS #######################################################################################
 START_DAY: int = 0
@@ -384,17 +384,10 @@ def generate_sharpe_heat_map(results: BacktesterResults, subplot: Axes) -> Axes:
     returns: ndarray = results["daily_instrument_returns"]
     means: ndarray = np.mean(returns,
         axis=1)
-
     stds: ndarray = np.std(returns,
         axis=1)
 
-    # I changed this line
-    # sharpe_ratios: ndarray = (means / stds) * np.sqrt(250)
-
-    # Make std = NaN where 0 to suppress it
-    stds_safe = np.where(stds == 0, np.nan, stds)
-    sharpe_ratios = (means / stds_safe) * np.sqrt(250)
-
+    sharpe_ratios: ndarray = (means / stds) * np.sqrt(250)
 
     # Reshape grid into (1, 50) for the horizontal heatmap
     sharpe_grid = sharpe_ratios.reshape(1,
@@ -482,7 +475,7 @@ def get_subplot(graph_type: str, results: BacktesterResults, subplot: Axes) -> A
 
 
 def get_ema(instrument_price_history: ndarray, lookback: int) -> ndarray:
-    price_series = pd.Series(instrument_price_history)
+    price_series: Series = pd.Series(instrument_price_history)
     return price_series.ewm(span=lookback,
         adjust=False).mean()
 
@@ -827,3 +820,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+    

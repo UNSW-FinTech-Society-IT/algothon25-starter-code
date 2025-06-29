@@ -1,82 +1,61 @@
-from typing import List, Optional
+#!/usr/bin/env python3
+
 import numpy as np
+import matplotlib.pyplot as plt
 
 data = np.loadtxt("prices.txt")
 
-# Constants
-SHORT_TERM_MA_WINDOW = 20
-# sigma is standard deviation (finance and mathematics term)
-NUM_SIGMA = 2
+stock_prices = data[:, 0]
+
+# Bollinger needs
+#  - sd
+#  - three bands
+#  - middle band is moving average
+#  - upper and lower bands represent SD
 
 
 
-class STD_Revert_Generator:
-    """The class"""
-    def __init__(self, stock_prices):
-        self.money_weighted_pos = 0
-        self.stock_prices = stock_prices
-    def calculate_sigma_sma(self, day):
-        """Calculates sigma over a 14 day period"""
+class Bollinger_Position_Generator:
+    def __init__(self, time_period, num_sd):
+        self.multiplier = num_sd
+        # Time period (from curr day) used to calculate SMA and SD
+        self.time_period = time_period
+        self.cash_equiv = 0
+        # NOTE: these lists are not necessary if we are only considering values from
+        # the current day.
+        self.sma_ls = []
+        self.upper_band_ls = []
+        self.lower_band_ls = []
 
-        array = self.stock_prices[day - SHORT_TERM_MA_WINDOW: day]
+    def compute_position(self, day, price_history):
+        if day >= self.time_period:
+            # Compute simple moving average
+            sma = self.get_trailing_avg(self.time_period, price_history)
+            # Add to list of daily moving averages
+            self.sma_ls.append(sma)
 
-        sigma = np.std(array)
-        sma = np.mean(array)
+            std = self.get_std(self.time_period, price_history)
+            # Calculate upper and lower bounds for current day and add to the lists
+            self.upper_band_ls.append(sma + self.multiplier * std)
+            self.lower_band_ls.append(sma - self.multiplier * std)
 
-        return sigma, sma
+            # Check if stock price is trading around the upper/lower bands
+            if price_history[-1] >= self.upper_band_ls[-1]:
+                self.cash_equiv = -10000
+            elif price_history[-1] <= self.lower_band_ls[-1]:
+                self.cash_equiv = 10000
+        
+        return self.cash_equiv // price_history[-1]
 
+    # Gets the average of the last n days of price_history and returns it
+    # (n is duration)
+    def get_trailing_avg(self, duration, price_history):
+        return sum(price_history[-duration:]) / duration
 
-    def compute_position(self, day):
-        """Compute position"""
-        current_price = self.stock_prices[day] # price on day X
-        sigma, sma = self.calculate_sigma_sma(day)
-        upper_band, lower_band = self.get_upper_lower_band(sma, sigma)
-
-        if current_price > upper_band:
-            self.money_weighted_pos = -10000
-            print(f"Day {day}: Price {current_price:.2f} > Upper Band {upper_band:.2f}. Sell")
-        elif current_price < lower_band:
-            # risk management -- setting a take profit and stop loss.
-
-            # set a value where u would take profit, and set a value where u 
-            # take a loss.
-
-            # take profit whenever the price hits the SMA
-            self.money_weighted_pos = 10000
-
-            """
-                stop loss if the price hits a third of the SMA in the opposite direction
-                sma dollar away from stock, stock worth $50, 1/3 sma = $.33.
-                set the stop loss value at 49.67, vice versa if we are goign short
-                go from $50 to $49 $49 is the SMA set the stop loss as (50 - 49)/3 + 50 = 50.33
-            """
-            print(f"Day {day}: Price {current_price:.2f} < Lower Band {lower_band:.2f}. Buy")
-
-
-        if current_price > 0: # Avoid division by zero
-            return int(self.money_weighted_pos // current_price)
-
-        return int(self.money_weighted_pos // self.stock_prices[day])
+    # Gets the standard deviation from the last n days of price_history and
+    # returns it (n is duration/time period)
+    def get_std(self, duration, price_history):
+        return np.std(price_history[-duration:])
 
 
-
-    # # Create a upper band and lower band value based off of standard deviations from the short term moving average price
-    def get_upper_lower_band(self, midde_band, sigma):
-        """Get upper and lower bound"""
-        upper_band = midde_band + (sigma * NUM_SIGMA)
-        lower_band = midde_band - (sigma * NUM_SIGMA)
-
-        return upper_band, lower_band
-
-
-
-def main():
-    """Main function"""
-    stock_prices = data[:, 0]
-    blob = STD_Revert_Generator(stock_prices=stock_prices)
-    for day in range(SHORT_TERM_MA_WINDOW, len(stock_prices)):
-        blob.compute_position(day)
-
-
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
