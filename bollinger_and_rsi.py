@@ -16,7 +16,6 @@ stock_prices = data[:, 0]
 #  - upper and lower bands represent SD * multiplier
 
 
-
 class Bollinger_RSI_Position_Generator:
     def __init__(self, time_period, num_sd):
         self.multiplier = num_sd
@@ -26,13 +25,12 @@ class Bollinger_RSI_Position_Generator:
         # Initialise one RSI object for each stock
         self.rsi_obj = RSI_Position_Generator()
         self.rsi_history = []
-
         # Initialise boolean reflecting if we are currently entered into a position
         self.has_entered_position = False
         # Declare boolean reflecting what position we are entered in
         self.position_is_long = False
-        # Initialise a stop-loss
-        self.stop_loss = 0
+        # Initialise a take-profit
+        self.take_profit = 0
         # Declare variable to store price of band on day we entered the trade
         self.band_price = 0
         # Initialise variable that stores the number of shares held for this stock
@@ -53,11 +51,11 @@ class Bollinger_RSI_Position_Generator:
             self.days_passed += 1
             return 0
         elif self.days_passed == RSI_PERIOD + 1:
-            rsi = self.rsi_obj.calculate_initial_rsi(day, stock_prices)
+            rsi = self.rsi_obj.calculate_initial_rsi(day, price_history)
             self.rsi_history.append(rsi)
             self.days_passed += 1
         else:
-            rsi = self.rsi_obj.calculate_rsi(day, stock_prices)
+            rsi = self.rsi_obj.calculate_rsi(day, price_history)
             self.rsi_history.append(rsi)
 
         # If there's enough past data to calculate the SMA, compute position
@@ -79,13 +77,14 @@ class Bollinger_RSI_Position_Generator:
 
             # Check whether we have previously entered or exited a position.
             # If we have entered a position, check if price has met stop-loss or
-            # take-profit.
-            # If not, see if we should enter a position based on Bollinger.
+            # take-profit, otherwise do nothing.
+            # If not entered into a position, see if we should enter a trade based on the
+            # Bollinger bands.
             if self.has_entered_position and self.position_is_long:
                 # We were already buying on a previous day
                 if (
                     price_history[-1] <= self.band_price - stop_loss_band_diff or
-                    price_history[-1] >= sma
+                    price_history[-1] >= self.take_profit
                 ):
                     # Exit if price drops below stop-loss to reduce losses, or cash out
                     # if price rises above take-profit.
@@ -96,7 +95,7 @@ class Bollinger_RSI_Position_Generator:
                 # We were already shorting on some previous day
                 if (
                     price_history[-1] >= self.band_price + stop_loss_band_diff or
-                    price_history[-1] <= sma
+                    price_history[-1] <= self.take_profit
                 ):
                     # Exit if price rises above stop-loss to reduce losses, or cash out
                     # if price falls below take-profit.
@@ -108,22 +107,26 @@ class Bollinger_RSI_Position_Generator:
                 # Check if stock price is trading around the upper/lower bands,
                 # confirm with RSI value.
                 if (
-                    price_history[-1] >= self.upper_band_ls[-1] and
-                    self.rsi_history[-1] > 70
+                    price_history[-1] >= self.upper_band_ls[-1]
+                    # self.rsi_history[-1] > 70
                 ):
                     self.cash_equiv -= 10000
                     self.has_entered_position = True
                     self.position_is_long = False
                     self.band_price = self.upper_band_ls[-1]
+                    # Set take-profit as the SMA of the day the trade was made
+                    self.take_profit = sma
                     self.num_shares_held = self.cash_equiv // price_history[-1]
                 elif (
-                    price_history[-1] <= self.lower_band_ls[-1] and
-                    self.rsi_history[-1] < 30
+                    price_history[-1] <= self.lower_band_ls[-1]
+                    # self.rsi_history[-1] < 30
                 ):
                     self.cash_equiv += 10000
                     self.has_entered_position = True
                     self.position_is_long = True
                     self.band_price = self.lower_band_ls[-1]
+                    # Set take-profit as the SMA of the day the trade was made
+                    self.take_profit = sma
                     self.num_shares_held = self.cash_equiv // price_history[-1]
         
         return self.num_shares_held
@@ -137,6 +140,9 @@ class Bollinger_RSI_Position_Generator:
     # returns it (n is duration/time period)
     def get_std(self, duration, price_history):
         return np.std(price_history[-duration:])
+
+    def adjust_position():
+
 
     # Gets the RSI for the last RSI_PERIOD days of price_history and returns
     # it
