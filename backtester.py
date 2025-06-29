@@ -25,7 +25,7 @@ PLOT_COLORS: Dict[str, str] = {
     "pnl": "#2ca02c",
     "cum_pnl": "#1f77b4",
     "utilisation": "#ff7f0e",
-    "sharp_change": "#d62728",
+    "sharpe_change": "#d62728",
 }
 
 default_strategy_filepath: str = "./overclocked.py"
@@ -58,9 +58,9 @@ usage_error: str = """
             daily-pnl: graphs your daily profit and loss
             cum-pnl: graphs your cumulative profit and loss over time
             capital-util: graphs your total capital utilisation over time
-            sharp-heat-map: graphs a heat map of the daily sharp ratios your strategy had over 
+            sharpe-heat-map: graphs a heat map of the daily sharpe ratios your strategy had over 
                 time
-            cum-sharp: graphs your cumulative sharp ratio over time
+            cum-sharpe: graphs your cumulative sharpe ratio over time
 """
 
 CMD_LINE_OPTIONS: List[str] = [
@@ -74,8 +74,8 @@ GRAPH_OPTIONS: List[str] = [
     "daily-pnl",
     "cum-pnl",
     "capital-util",
-    "sharp-heat-map",
-    "cum-sharp",
+    "sharpe-heat-map",
+    "cum-sharpe",
 ]
 
 
@@ -103,7 +103,7 @@ class Params:
         start_day: int = 1,
         end_day: int = 750,
         enable_commission: bool = True,
-        graphs: List[str] = ["cum-pnl", "sharp-heat-map", "daily-pnl"],
+        graphs: List[str] = ["cum-pnl", "sharpe-heat-map", "daily-pnl"],
     ) -> None:
         self.strategy_filepath = strategy_filepath
         self.strategy_function_name = strategy_function_name
@@ -241,7 +241,7 @@ def generate_stats_subplot(
         r"$\bf{Backtester \ Stats}$" + "\n\n"
         f"Mean PnL: ${results['daily_pnl'].mean():.2f}\n"
         f"Std Dev: ${results['daily_pnl'].std():.2f}\n"
-        f"Annualised Sharp Ratio: "
+        f"Annualised Sharpe Ratio: "
         f"{np.sqrt(250) * results['daily_pnl'].mean() / results['daily_pnl'].std():.2f}\n"
         f"Win Rate %: {win_rate_pct:.2f}% \n"
         f"Score: {results['daily_pnl'].mean() - 0.1*results['daily_pnl'].std():.2f}"
@@ -333,32 +333,32 @@ def generate_capital_utilisation_subplot(
     return subplot
 
 
-def generate_sharp_heat_map(results: BacktesterResults, subplot: Axes) -> Axes:
-    # Generate ndarray of sharp ratios for each instrument
+def generate_sharpe_heat_map(results: BacktesterResults, subplot: Axes) -> Axes:
+    # Generate ndarray of sharpe ratios for each instrument
     returns: ndarray = results["daily_instrument_returns"]
     means: ndarray = np.mean(returns, axis=1)
     stds: ndarray = np.std(returns, axis=1)
 
-    sharp_ratios: ndarray = (means / stds) * np.sqrt(250)
+    sharpe_ratios: ndarray = (means / stds) * np.sqrt(250)
 
     # Reshape grid into (1, 50) for the horizontal heatmap
-    sharp_grid = sharp_ratios.reshape(1, -1)
+    sharpe_grid = sharpe_ratios.reshape(1, -1)
 
     # Plot the heatmap
-    im = subplot.imshow(sharp_grid, cmap="viridis", aspect="auto")
-    subplot.set_title("Annualised sharp-Ratio Heat Map (Higher = Better)", fontsize=12)
-    subplot.set_xticks(np.arange(len(sharp_ratios)))
-    subplot.set_xticklabels([str(i) for i in range(len(sharp_ratios))], fontsize=6)
+    im = subplot.imshow(sharpe_grid, cmap="viridis", aspect="auto")
+    subplot.set_title("Annualised sharpe-Ratio Heat Map (Higher = Better)", fontsize=12)
+    subplot.set_xticks(np.arange(len(sharpe_ratios)))
+    subplot.set_xticklabels([str(i) for i in range(len(sharpe_ratios))], fontsize=6)
     subplot.set_yticks([])
     color_bar = subplot.figure.colorbar(
         im, ax=subplot, orientation="vertical", pad=0.01
     )
-    color_bar.set_label("Sharp", fontsize=9)
+    color_bar.set_label("Sharpe", fontsize=9)
 
     return subplot
 
 
-def generate_sharp_ratio_subplot(results: BacktesterResults, subplot: Axes) -> Axes:
+def generate_sharpe_ratio_subplot(results: BacktesterResults, subplot: Axes) -> Axes:
     # Generate cumulative means and standard deviation
     daily_pnl: ndarray = results["daily_pnl"]
     counts: ndarray = np.arange(1, results["end_day"] - results["start_day"] + 2)
@@ -370,20 +370,20 @@ def generate_sharp_ratio_subplot(results: BacktesterResults, subplot: Axes) -> A
         [np.std(daily_pnl[: i + 1], ddof=0) for i in range(len(daily_pnl))]
     )
 
-    sharp_ratios: ndarray = (cumulative_means / cumulative_std_dev) * np.sqrt(250)
+    sharpe_ratios: ndarray = (cumulative_means / cumulative_std_dev) * np.sqrt(250)
 
     subplot.set_title(
-        f"Change in Annualised Sharp Ratio from day {results['start_day']} to"
+        f"Change in Annualised Sharpe Ratio from day {results['start_day']} to"
         f" {results['end_day']}",
         fontsize=12,
         fontweight="bold",
     )
     subplot.set_xlabel("Days", fontsize=10)
-    subplot.set_ylabel("Annualised Sharp Ratio", fontsize=10)
+    subplot.set_ylabel("Annualised Sharpe Ratio", fontsize=10)
     subplot.grid(True, linestyle="--", linewidth=0.5, alpha=0.7)
     subplot.spines["top"].set_visible(False)
     subplot.spines["right"].set_visible(False)
-    subplot.plot(days, sharp_ratios, linestyle="-", color=PLOT_COLORS["sharp_change"])
+    subplot.plot(days, sharpe_ratios, linestyle="-", color=PLOT_COLORS["sharpe_change"])
 
     return subplot
 
@@ -395,10 +395,10 @@ def get_subplot(graph_type: str, results: BacktesterResults, subplot: Axes) -> A
         return generate_cumulative_pnl_subplot(results, subplot)
     elif graph_type == "capital-util":
         return generate_capital_utilisation_subplot(results, subplot)
-    elif graph_type == "sharp-heat-map":
-        return generate_sharp_heat_map(results, subplot)
-    elif graph_type == "cum-sharp":
-        return generate_sharp_ratio_subplot(results, subplot)
+    elif graph_type == "sharpe-heat-map":
+        return generate_sharpe_heat_map(results, subplot)
+    elif graph_type == "cum-sharpe":
+        return generate_sharpe_ratio_subplot(results, subplot)
 
 
 # BACKTESTER CLASS ################################################################################
@@ -526,7 +526,7 @@ class Backtester:
     ) -> None:
         """
         Generates and shows a dashboard that summarises a backtest's results. Shows stats such
-        as mean PnL and sharp ratio and plots cumulative PnL, Daily PnL and capital utilisation
+        as mean PnL and sharpe ratio and plots cumulative PnL, Daily PnL and capital utilisation
         :param backtester_results: contains data on a backtest
         :param graphs: list of graphs to be shown
         :return: None
