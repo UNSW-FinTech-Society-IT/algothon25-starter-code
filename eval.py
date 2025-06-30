@@ -4,10 +4,10 @@ import numpy as np
 import pandas as pd
 from main import getMyPosition as getPosition
 
-nInst = 0
-nt = 0
-commRate = 0.0005
-dlrPosLimit = 10000
+nInst = 0 # number of instruments
+nt = 0 # number of days
+commRate = 0.0005 # commision rate
+dlrPosLimit = 10000 # position limit
 
 def loadPrices(fn):
     global nt, nInst
@@ -16,12 +16,12 @@ def loadPrices(fn):
     return (df.values).T
 
 pricesFile="./prices.txt"
-prcAll = loadPrices(pricesFile)
+prcAll = loadPrices(pricesFile) 
 print ("Loaded %d instruments for %d days" % (nInst, nt))
 
 def calcPL(prcHist, numTestDays):
     cash = 0
-    curPos = np.zeros(nInst)
+    curPos = np.zeros(nInst) 
     totDVolume = 0
     totDVolumeSignal = 0
     totDVolumeRandom = 0
